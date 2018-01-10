@@ -9,7 +9,7 @@ PBR = PicoBorgRev.PicoBorgRev()
 PBR.Init()
 # User code here, use PBR to control the board
 
-Multiple boards can be used when configured with different I²C addresses by creating multiple instances, e.g.
+Multiple boards can be used when configured with different IÂ²C addresses by creating multiple instances, e.g.
 import PicoBorgRev
 PBR1 = PicoBorgRev.PicoBorgRev()
 PBR2 = PicoBorgRev.PicoBorgRev()
@@ -31,6 +31,7 @@ import io
 import fcntl
 import types
 import time
+import sys
 
 # Constant values
 I2C_SLAVE               = 0x0703
@@ -82,11 +83,11 @@ def ScanForPicoBorgReverse(busNumber = 1):
     """
 ScanForPicoBorgReverse([busNumber])
 
-Scans the I²C bus for a PicoBorg Reverse boards and returns a list of all usable addresses
-The busNumber if supplied is which I²C bus to scan, 0 for Rev 1 boards, 1 for Rev 2 boards, if not supplied the default is 1
+Scans the IÂ²C bus for a PicoBorg Reverse boards and returns a list of all usable addresses
+The busNumber if supplied is which IÂ²C bus to scan, 0 for Rev 1 boards, 1 for Rev 2 boards, if not supplied the default is 1
     """
     found = []
-    print 'Scanning I²C bus #%d' % (busNumber)
+    print('Checking for picoborg on I2C bus #{0}'.format(busNumber))
     bus = PicoBorgRev()
     for address in range(0x03, 0x78, 1):
         try:
@@ -94,7 +95,7 @@ The busNumber if supplied is which I²C bus to scan, 0 for Rev 1 boards, 1 for Re
             i2cRecv = bus.RawRead(COMMAND_GET_ID, I2C_MAX_LEN)
             if len(i2cRecv) == I2C_MAX_LEN:
                 if i2cRecv[1] == I2C_ID_PICOBORG_REV:
-                    print 'Found PicoBorg Reverse at %02X' % (address)
+                    print('Found PicoBorg Reverse at {0:02X}'.format(address))
                     found.append(address)
                 else:
                     pass
@@ -105,11 +106,11 @@ The busNumber if supplied is which I²C bus to scan, 0 for Rev 1 boards, 1 for Re
         except:
             pass
     if len(found) == 0:
-        print 'No PicoBorg Reverse boards found, is bus #%d correct (should be 0 for Rev 1, 1 for Rev 2)' % (busNumber)
+        print('No PicoBorg Reverse boards found, is bus #{0:d} correct (should be 0 for Rev 1, 1 for Rev 2)'.format(busNumber))
     elif len(found) == 1:
-        print '1 PicoBorg Reverse board found'
+        print('1 PicoBorg Reverse board found')
     else:
-        print '%d PicoBorg Reverse boards found' % (len(found))
+        print('{0} PicoBorg Reverse boards found'.format(len(found)))
     return found
 
 
@@ -117,25 +118,25 @@ def SetNewAddress(newAddress, oldAddress = -1, busNumber = 1):
     """
 SetNewAddress(newAddress, [oldAddress], [busNumber])
 
-Scans the I²C bus for the first PicoBorg Reverse and sets it to a new I2C address
+Scans the IÂ²C bus for the first PicoBorg Reverse and sets it to a new I2C address
 If oldAddress is supplied it will change the address of the board at that address rather than scanning the bus
-The busNumber if supplied is which I²C bus to scan, 0 for Rev 1 boards, 1 for Rev 2 boards, if not supplied the default is 1
-Warning, this new I²C address will still be used after resetting the power on the device
+The busNumber if supplied is which IÂ²C bus to scan, 0 for Rev 1 boards, 1 for Rev 2 boards, if not supplied the default is 1
+Warning, this new IÂ²C address will still be used after resetting the power on the device
     """
     if newAddress < 0x03:
-        print 'Error, I²C addresses below 3 (0x03) are reserved, use an address between 3 (0x03) and 119 (0x77)'
+        print('Error, IÂ²C addresses below 3 (0x03) are reserved, use an address between 3 (0x03) and 119 (0x77)')
         return
     elif newAddress > 0x77:
-        print 'Error, I²C addresses above 119 (0x77) are reserved, use an address between 3 (0x03) and 119 (0x77)'
+        print('Error, IÂ²C addresses above 119 (0x77) are reserved, use an address between 3 (0x03) and 119 (0x77)')
         return
     if oldAddress < 0x0:
         found = ScanForPicoBorgReverse(busNumber)
         if len(found) < 1:
-            print 'No PicoBorg Reverse boards found, cannot set a new I²C address!'
+            print('No PicoBorg Reverse boards found, cannot set a new IÂ²C address!')
             return
         else:
             oldAddress = found[0]
-    print 'Changing I²C address from %02X to %02X (bus #%d)' % (oldAddress, newAddress, busNumber)
+    print('Changing IÂ²C address from {0:02X} to {1:02X} (bus #{2:d})'.format(oldAddress, newAddress, busNumber))
     bus = PicoBorgRev()
     bus.InitBusOnly(busNumber, oldAddress)
     try:
@@ -143,44 +144,44 @@ Warning, this new I²C address will still be used after resetting the power on th
         if len(i2cRecv) == I2C_MAX_LEN:
             if i2cRecv[1] == I2C_ID_PICOBORG_REV:
                 foundChip = True
-                print 'Found PicoBorg Reverse at %02X' % (oldAddress)
+                print('Found PicoBorg Reverse at {0:02X}'.format(oldAddress))
             else:
                 foundChip = False
-                print 'Found a device at %02X, but it is not a PicoBorg Reverse (ID %02X instead of %02X)' % (oldAddress, i2cRecv[1], I2C_ID_PICOBORG_REV)
+                print('Found a device at {0:02X}, but it is not a PicoBorg Reverse (ID {1:02X} instead of {2:02X})'.format(oldAddress, i2cRecv[1], I2C_ID_PICOBORG_REV))
         else:
             foundChip = False
-            print 'Missing PicoBorg Reverse at %02X' % (oldAddress)
+            print('Missing PicoBorg Reverse at {0:02X}'.format(oldAddress))
     except KeyboardInterrupt:
         raise
     except:
         foundChip = False
-        print 'Missing PicoBorg Reverse at %02X' % (oldAddress)
+        print('Missing PicoBorg Reverse at {0:02X}'.format(oldAddress))
     if foundChip:
         bus.RawWrite(COMMAND_SET_I2C_ADD, [newAddress])
         time.sleep(0.1)
-        print 'Address changed to %02X, attempting to talk with the new address' % (newAddress)
+        print('Address changed to {0:02X}, attempting to talk with the new address'.format(newAddress))
         try:
             bus.InitBusOnly(busNumber, newAddress)
             i2cRecv = bus.RawRead(COMMAND_GET_ID, I2C_MAX_LEN)
             if len(i2cRecv) == I2C_MAX_LEN:
                 if i2cRecv[1] == I2C_ID_PICOBORG_REV:
                     foundChip = True
-                    print 'Found PicoBorg Reverse at %02X' % (newAddress)
+                    print('Found PicoBorg Reverse at {0:02X}'.format(newAddress))
                 else:
                     foundChip = False
-                    print 'Found a device at %02X, but it is not a PicoBorg Reverse (ID %02X instead of %02X)' % (newAddress, i2cRecv[1], I2C_ID_PICOBORG_REV)
+                    print('Found a device at {0:02X}, but it is not a PicoBorg Reverse (ID {1:02X} instead of {2:02X})'.format(newAddress, i2cRecv[1], I2C_ID_PICOBORG_REV))
             else:
                 foundChip = False
-                print 'Missing PicoBorg Reverse at %02X' % (newAddress)
+                print('Missing PicoBorg Reverse at {0:02X}'.format(newAddress))
         except KeyboardInterrupt:
             raise
         except:
             foundChip = False
-            print 'Missing PicoBorg Reverse at %02X' % (newAddress)
+            print('Missing PicoBorg Reverse at {0:02X}'.format(newAddress))
     if foundChip:
-        print 'New I²C address of %02X set successfully' % (newAddress)
+        print('New IÂ²C address of {0:02X} set successfully'.format(newAddress))
     else:
-        print 'Failed to set new I²C address...'
+        print('Failed to set new IÂ²C address...')
 
 
 # Class used to control PicoBorg Reverse
@@ -188,16 +189,16 @@ class PicoBorgRev:
     """
 This module is designed to communicate with the PicoBorg Reverse
 
-busNumber               I²C bus on which the PicoBorg Reverse is attached (Rev 1 is bus 0, Rev 2 is bus 1)
-bus                     the smbus object used to talk to the I²C bus
-i2cAddress              The I²C address of the PicoBorg Reverse chip to control
+busNumber               IÂ²C bus on which the PicoBorg Reverse is attached (Rev 1 is bus 0, Rev 2 is bus 1)
+bus                     the smbus object used to talk to the IÂ²C bus
+i2cAddress              The IÂ²C address of the PicoBorg Reverse chip to control
 foundChip               True if the PicoBorg Reverse chip can be seen, False otherwise
 printFunction           Function reference to call when printing text, if None "print" is used
     """
 
     # Shared values used by this class
     busNumber               = 1     # Check here for Rev 1 vs Rev 2 and select the correct bus
-    i2cAddress              = 0x44  # I²C address, override for a different address
+    i2cAddress              = 0x44  # IÂ²C address, override for a different address
     foundChip               = False
     printFunction           = None
     i2cWrite                = None
@@ -213,9 +214,14 @@ Command codes can be found at the top of PicoBorgRev.py, data is a list of 0 or 
 
 Under most circumstances you should use the appropriate function instead of RawWrite
         """
-        rawOutput = chr(command)
-        for singleByte in data:
-            rawOutput += chr(singleByte)
+        if sys.version_info >= (3,0):
+            fullList = [command]+data
+            rawOutput = bytes(fullList)
+        else:
+            rawOutput = chr(command)
+            for singleByte in data:
+                rawOutput += chr(singleByte)
+
         self.i2cWrite.write(rawOutput)
 
 
@@ -234,9 +240,15 @@ Under most circumstances you should use the appropriate function instead of RawR
         while retryCount > 0:
             self.RawWrite(command, [])
             rawReply = self.i2cRead.read(length)
-            reply = []
-            for singleByte in rawReply:
-                reply.append(ord(singleByte))
+            if sys.version_info >= (3,0):
+                reply = []
+                for i in rawReply:
+                    reply.append(i)
+            else:
+                reply = []
+                for singleByte in rawReply:
+                    reply.append(ord(singleByte))
+
             if command == reply[0]:
                 break
             else:
@@ -244,7 +256,7 @@ Under most circumstances you should use the appropriate function instead of RawR
         if retryCount > 0:
             return reply
         else:
-            raise IOError('I2C read for command %d failed' % (command))
+            raise IOError('I2C read for command {0:d} failed'.format(command))
 
 
     def InitBusOnly(self, busNumber, address):
@@ -269,7 +281,7 @@ Print(message)
 Wrapper used by the PicoBorgRev instance to print messages, will call printFunction if set, print otherwise
         """
         if self.printFunction == None:
-            print message
+            print(message)
         else:
             self.printFunction(message)
 
@@ -294,7 +306,7 @@ Prepare the I2C driver for talking to the PicoBorg Reverse
 If tryOtherBus is True, this function will attempt to use the other bus if the PicoBorg Reverse devices can not be found on the current busNumber
     This is only really useful for early Raspberry Pi models!
         """
-        self.Print('Loading PicoBorg Reverse on bus %d, address %02X' % (self.busNumber, self.i2cAddress))
+        self.Print('Loading PicoBorg Reverse on bus {0:d}, address {1:02X}'.format(self.busNumber, self.i2cAddress))
 
         # Open the bus
         self.i2cRead = io.open("/dev/i2c-" + str(self.busNumber), "rb", buffering = 0)
@@ -308,18 +320,18 @@ If tryOtherBus is True, this function will attempt to use the other bus if the P
             if len(i2cRecv) == I2C_MAX_LEN:
                 if i2cRecv[1] == I2C_ID_PICOBORG_REV:
                     self.foundChip = True
-                    self.Print('Found PicoBorg Reverse at %02X' % (self.i2cAddress))
+                    self.Print('Found PicoBorg Reverse at {0:02X}'.format(self.i2cAddress))
                 else:
                     self.foundChip = False
-                    self.Print('Found a device at %02X, but it is not a PicoBorg Reverse (ID %02X instead of %02X)' % (self.i2cAddress, i2cRecv[1], I2C_ID_PICOBORG_REV))
+                    self.Print('Found a device at {0:02X}, but it is not a PicoBorg Reverse (ID {1:02X} instead of {2:02X})'.format(self.i2cAddress, i2cRecv[1], I2C_ID_PICOBORG_REV))
             else:
                 self.foundChip = False
-                self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
+                self.Print('Missing PicoBorg Reverse at {0:02X}'.format(self.i2cAddress))
         except KeyboardInterrupt:
             raise
         except:
             self.foundChip = False
-            self.Print('Missing PicoBorg Reverse at %02X' % (self.i2cAddress))
+            self.Print('Missing PicoBorg Reverse at {0:02X}'.format(self.i2cAddress))
 
         # See if we are missing chips
         if not self.foundChip:
@@ -329,13 +341,13 @@ If tryOtherBus is True, this function will attempt to use the other bus if the P
                     self.busNumber = 0
                 else:
                     self.busNumber = 1
-                self.Print('Trying bus %d instead' % (self.busNumber))
+                self.Print('Trying bus {0:d} instead'.format(self.busNumber))
                 self.Init(False)
             else:
                 self.Print('Are you sure your PicoBorg Reverse is properly attached, the correct address is used, and the I2C drivers are running?')
                 self.bus = None
         else:
-            self.Print('PicoBorg Reverse loaded on bus %d' % (self.busNumber))
+            self.Print('PicoBorg Reverse loaded on bus {0:d}'.format(self.busNumber))
 
 
     def SetMotor2(self, power):
@@ -366,8 +378,8 @@ SetMotor2(1)     -> motor 2 moving forward at 100% power
             self.RawWrite(command, [pwm])
         except KeyboardInterrupt:
             raise
-        except:
-            self.Print('Failed sending motor 2 drive level!')
+        except Exception as x:
+            self.Print('Failed sending motor 2 drive level: {0}'.format(x))
 
 
     def GetMotor2(self):
@@ -427,8 +439,8 @@ SetMotor1(1)     -> motor 1 moving forward at 100% power
             self.RawWrite(command, [pwm])
         except KeyboardInterrupt:
             raise
-        except:
-            self.Print('Failed sending motor 1 drive level!')
+        except Exception as x:
+            self.Print('Failed sending motor 1 drive level: {0}'.format(x))
 
 
     def GetMotor1(self):
@@ -762,7 +774,7 @@ EncoderMoveMotor2(5)     -> motor 2 moving forward for 5 counts
             command = COMMAND_MOVE_A_FWD
 
         if counts > 32767:
-            self.Print('Cannot move %d counts in one go, moving 32767 counts instead' % (counts))
+            self.Print('Cannot move {0:d} counts in one go, moving 32767 counts instead'.format(counts))
             counts = 32767
         countsLow = counts & 0xFF
         countsHigh = (counts >> 8) & 0xFF
@@ -796,7 +808,7 @@ EncoderMoveMotor1(5)     -> motor 1 moving forward for 5 counts
             command = COMMAND_MOVE_B_FWD
 
         if counts > 32767:
-            self.Print('Cannot move %d counts in one go, moving 32767 counts instead' % (counts))
+            self.Print('Cannot move {0:d} counts in one go, moving 32767 counts instead'.format(counts))
             counts = 32767
         countsLow = counts & 0xFF
         countsHigh = (counts >> 8) & 0xFF
@@ -832,7 +844,7 @@ EncoderMoveMotors(5)     -> all motors moving forward for 5 counts
         countsHigh = (counts >> 8) & 0xFF
 
         if counts > 32767:
-            self.Print('Cannot move %d counts in one go, moving 32767 counts instead' % (counts))
+            self.Print('Cannot move {0:d} counts in one go, moving 32767 counts instead'.format(counts))
             counts = 32767
 
 
@@ -876,7 +888,7 @@ If a timeout is provided the function will return False after timeout seconds if
         while self.IsEncoderMoving():
             if timeout >= 0:
                 if (time.time() - startTime) >= timeout:
-                    self.Print('Timed out after %d seconds waiting for encoder moves to complete' % (timeout))
+                    self.Print('Timed out after {0:d} seconds waiting for encoder moves to complete'.format(timeout))
                     return False
             time.sleep(0.1)
         return True
@@ -937,8 +949,8 @@ Displays the names and descriptions of the various functions and settings provid
         funcList = [PicoBorgRev.__dict__.get(a) for a in dir(PicoBorgRev) if isinstance(PicoBorgRev.__dict__.get(a), types.FunctionType)]
         funcListSorted = sorted(funcList, key = lambda x: x.func_code.co_firstlineno)
 
-        print self.__doc__
+        print(self.__doc__)
         print
         for func in funcListSorted:
-            print '=== %s === %s' % (func.func_name, func.func_doc)
+            print('=== {0} === {1}'.format(func.func_name, func.func_doc))
 
