@@ -35,13 +35,13 @@ class ItemCollection:
 
 
 class Axis:
-    def __init__(self,code,name, minraw = 0,maxraw = 255,deadzone=0.1):
+    def __init__(self,code,name, minraw = 0,maxraw = 255,deadzone=0.1,default=0):
         self.code = code
         self.name = name
         self.minraw = minraw
         self.maxraw = maxraw
         self.deadzone = deadzone
-        self.value = 0
+        self.value = default
 
     def setRaw(self, raw):
         rawrange = self.maxraw - self.minraw
@@ -52,8 +52,8 @@ class Axis:
             self.value = 0
 
 class Axes(ItemCollection) :
-    def register(self,code,name,minraw = 0, maxraw = 255):
-        self.items.append(Axis(code,name,minraw,maxraw))
+    def register(self,code,name,minraw = 0, maxraw = 255, deadzone=0.1, default=0):
+        self.items.append(Axis(code,name,minraw,maxraw,deadzone,default))
     
 
 class Button:
@@ -151,7 +151,7 @@ class GamePad:
                 axis = self.axes.byCode(event.code)
             except LookupError:
                 print("Could not finf axis for code {0}, ad hoc registered as AXIS_{0}".format(event.code))
-                self.axes.register(event.code,"AXIS_{0}".format(cevent.ode),0,255)
+                self.axes.register(event.code,"AXIS_{0}".format(event.code),0,255)
                 axis = self.axes.byCode(event.code)
                 
             axis.setRaw(event.value)
@@ -221,3 +221,32 @@ class DS3Controller(GamePad):
         self.axes.register(61,"ACCZ",0,1024)
         self.axes.register(62,"ACCROTZ",0,1024)
 
+class DS4Controller(GamePad):
+    def initialize(self):
+        self.buttons.register(304, "SQR")
+        self.buttons.register(305, "X")
+        self.buttons.register(306, "O")
+        self.buttons.register(307, "TRI")
+        self.buttons.register(308, "L1")
+        self.buttons.register(309, "R1")
+        self.buttons.register(310, "L2")
+        self.buttons.register(311, "R2")
+        self.buttons.register(312, "SHARE")
+        self.buttons.register(313, "OPTIONS")
+
+        self.buttons.register(314, "LS")
+        self.buttons.register(315, "RS")
+        self.buttons.register(316, "HOME")
+        self.buttons.register(317, "PANEL")
+            
+        self.axes.register( 0,"X",0,255)
+        self.axes.register( 1,"Y",255,0)
+        self.axes.register( 2,"RX",0,255)
+        self.axes.register( 3,"L2",0,255,default=-1.0)
+        self.axes.register( 4,"R2",0,255,default=-1.0)
+        self.axes.register( 5,"RY",255,0)
+        
+        self.axes.register(16,"HATX",0,255)
+        self.axes.register(17,"HATY",0,255)
+
+ 
