@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import gamepad
 from mainloop import MainLoop
 import sys,time

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import gamepad
 from mainloop import MainLoop
 import sys,time
@@ -7,7 +6,7 @@ import sys,time
 
 class Program(MainLoop):
     def initialize(self):
-        self.pad = gamepad.DS4Controller()
+        self.pad = gamepad.GamePad()
 
         self.pad.on_axischange += self.on_axischange
         self.pad.on_connect += self.on_connect
@@ -25,13 +24,8 @@ class Program(MainLoop):
         print("Stopped")
 
     def on_axischange(self,name,value):
-        sys.stdout.write("\rX: {0:+03f}, Y: {1:+03f}, RX: {2:+03f}, RY: {3:+03f}, L2: {4:+03f}, R2: {5:+03f}"
-                  .format(self.pad.axis("X"),
-                          self.pad.axis("Y"),
-                          self.pad.axis("RX"),
-                          self.pad.axis("RY"),
-                          self.pad.axis("L2"),
-                          self.pad.axis("R2")))
+        if value != 0:
+            print("\nAxis '{0}' changed to {1}".format(name,value))
         
     def on_buttondown(self,name,value):
         print("\nButton '{0}' pressed".format(name)) 

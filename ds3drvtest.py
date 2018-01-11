@@ -1,17 +1,13 @@
+#!/usr/bin/python
 import gamepad
 from mainloop import MainLoop
 import sys,time
 
 # grovepi init
-PIN_RELAY = 2
-PIN_CHAINLED = 3
-NUM_CHAINLED = 1
-PIN_LEDBAR = 4
+PIN_RELAY = 3
 
 import grovepi
 grovepi.pinMode(PIN_RELAY,"OUTPUT");
-grovepi.pinMode(PIN_CHAINLED,"OUTPUT");
-grovepi.chainableRgbLed_init(PIN_CHAINLED, NUM_CHAINLED)
 
 # picoborg init
 import PicoBorgRev
@@ -68,14 +64,13 @@ class Program(MainLoop):
             if name == "TRI":
                 print("Enabling Weapon")
                 grovepi.digitalWrite(PIN_RELAY,1)            
-
-    def on_buttonup(self,name,value):
-        print("\nButton '{0}' released".format(name))
-        if not self.emstop:
-            if name == "TRI":
+            elif name == "O":
                 print("Disabling Weapon")
                 grovepi.digitalWrite(PIN_RELAY,0)
 
+    def on_buttonup(self,name,value):
+        print("\nButton '{0}' released".format(name))
+            
     def on_connect(self,padname):
         print("\nJoystick '{0}' connected".format(padname))
 
