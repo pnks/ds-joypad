@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import gamepad
 from mainloop import MainLoop
-import sys,time
+import sys,time,os
 
 # grovepi init
 PIN_RELAY = 4
@@ -71,6 +71,8 @@ class Program(MainLoop):
             setColor(0,255,0)
             self.emstop = False
             print("Emergency Stop Released")
+        elif name == "START":
+            os.system("sudo halt")
             
         if not self.emstop:
             if name == "TRI":
