@@ -2,6 +2,7 @@ from evdev import InputDevice, categorize, ecodes
 from event import Event
 import time, sys
 import threading
+from detectgamepad import DetectGamepad
 
 
 class ItemCollection:
@@ -110,11 +111,13 @@ class GamePad:
         while self._loop_running:
             try:
                 if not connected:
-                    # attempt to (re) connect to the joystick/joypad
-                    self.gamepad = InputDevice(self._file)
-                    connected = True
-                    self.joypadconnected = True
-                    self.on_connect(self.gamepad.name)
+                    file = self.detectGamepad()
+                    if file is not None:
+                        # attempt to (re) connect to the joystick/joypad
+                        self.gamepad = InputDevice(file)
+                        connected = True
+                        self.joypadconnected = True
+                        self.on_connect(self.gamepad.name)
                 
                 for event in self.gamepad.read_loop():
                     self._processEvent(event)
@@ -177,7 +180,36 @@ class GamePad:
         axis = self.axes.byName(name)
         return axis.value if axis is not None else None
 
-    
+    def detectGamepad(self,fname="/proc/bus/input/devices"):
+
+        name = ""
+        evhandler = ""
+        type = ""
+        
+        with open(fname) as f:
+            content = f.readlines()
+        # you may also want to remove whitespace characters like `\n` at the end of each line
+        content = [x.strip() for x in content] 
+
+        for line in content:
+            if len(line) > 0:
+                if line[0] == "N":
+                    name = line[line.index('"')+1:line.rindex('"')]
+
+                if line[0] == "H":
+                    handlers = line[line.index("=")+1:].split(" ")
+                    for handler in handlers:
+                        if handler[:5] == "event":
+                            evhandler = "/dev/input/{0}".format(handler)
+                        if handler[:2] == "js":
+                            type = "joystick"
+                        
+        if type == "joystick":
+            return evhandler
+        else:
+            return None
+                    
+
 
 class DS3Controller(GamePad):
     def initialize(self):
