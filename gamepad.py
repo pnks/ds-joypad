@@ -2,7 +2,7 @@ from evdev import InputDevice, categorize, ecodes
 from event import Event
 import time, sys
 import threading
-from detectgamepad import DetectGamepad
+#from detectgamepad import DetectGamepad
 
 
 class ItemCollection:
@@ -255,28 +255,28 @@ class DS3Controller(GamePad):
 
 class DS4Controller(GamePad):
     def initialize(self):
-        self.buttons.register(304, "SQR")
-        self.buttons.register(305, "X")
-        self.buttons.register(306, "O")
+        self.buttons.register(304, "X")
+        self.buttons.register(305, "O")
         self.buttons.register(307, "TRI")
-        self.buttons.register(308, "L1")
-        self.buttons.register(309, "R1")
-        self.buttons.register(310, "L2")
-        self.buttons.register(311, "R2")
-        self.buttons.register(312, "SHARE")
-        self.buttons.register(313, "OPTIONS")
+        self.buttons.register(308, "SQR")
+        self.buttons.register(310, "L1")
+        self.buttons.register(311, "R1")
+        self.buttons.register(314, "SHARE")
+        self.buttons.register(315, "OPTIONS")
 
-        self.buttons.register(314, "LS")
-        self.buttons.register(315, "RS")
+        self.buttons.register(312, "L2")
+        self.buttons.register(313, "R2")
         self.buttons.register(316, "HOME")
-        self.buttons.register(317, "PANEL")
+#        self.buttons.register(317, "PANEL")
+        self.buttons.register(317, "LS")
+        self.buttons.register(318, "RS")
             
         self.axes.register( 0,"X",0,255)
         self.axes.register( 1,"Y",255,0)
-        self.axes.register( 2,"RX",0,255)
-        self.axes.register( 3,"L2",0,255,default=-1.0)
-        self.axes.register( 4,"R2",0,255,default=-1.0)
-        self.axes.register( 5,"RY",255,0)
+        self.axes.register( 2,"L2",0,255,default=-1.0)
+        self.axes.register( 3,"RX",0,255)
+        self.axes.register( 4,"RY",255,0)
+        self.axes.register( 5,"R2",0,255,default=-1.0)
         
         self.axes.register(16,"HATX",0,255)
         self.axes.register(17,"HATY",0,255)
